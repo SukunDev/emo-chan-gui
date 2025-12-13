@@ -1,10 +1,10 @@
-import { AudioVisualizer } from '@renderer/components/AudioVisualizer'
 import { Button } from '@renderer/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import { useWebSocket } from '@renderer/contexts/WebSocketProvider'
 import { createFileRoute } from '@tanstack/react-router'
-import { Loader, Unlink, Wifi } from 'lucide-react'
+import { Loader, Pause, Play, Unlink, Wifi } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
+import Marquee from 'react-fast-marquee'
 
 export const Route = createFileRoute('/_main/')({
   component: RouteComponent
@@ -29,13 +29,20 @@ interface MediaPayload {
   }
 }
 
+interface MediaHistoryItem {
+  title: string
+  artist: string
+}
+
 function RouteComponent(): React.JSX.Element {
   const { send, lastMessage } = useWebSocket()
-  const [isScanning, setIsScanning] = useState<boolean>(false)
+
+  const [isScanning, setIsScanning] = useState(false)
   const [isConnecting, setIsConnecting] = useState<string | null>(null)
   const [device, setDevice] = useState<Devices | null>(null)
   const [devices, setDevices] = useState<Devices[]>([])
   const [media, setMedia] = useState<MediaPayload | null>(null)
+  const [mediaHistory, setMediaHistory] = useState<MediaHistoryItem[]>([])
 
   const handleScanButton = (): void => {
     setIsScanning(true)
@@ -46,16 +53,20 @@ function RouteComponent(): React.JSX.Element {
     setIsConnecting(device.address)
     send({ event: 'ble-connect', address: device.address })
   }
+
   const handleDisconnectButton = (): void => {
     send({ event: 'ble-disconnect' })
   }
 
   useEffect(() => {
     try {
+      if (!lastMessage) return
+
       if (lastMessage.event === 'ble-scan-result') {
         setIsScanning(false)
         setDevices(lastMessage.data)
       }
+
       if (lastMessage.event === 'ble-status-result') {
         setDevice({
           connected: lastMessage.connected,
@@ -63,6 +74,7 @@ function RouteComponent(): React.JSX.Element {
           address: lastMessage.address
         })
       }
+
       if (lastMessage.event === 'ble-connect-result') {
         setIsConnecting(null)
         setDevice({
@@ -71,6 +83,7 @@ function RouteComponent(): React.JSX.Element {
           address: lastMessage.address
         })
       }
+
       if (lastMessage.event === 'ble-disconnect-result') {
         setDevice({
           connected: false,
@@ -78,25 +91,39 @@ function RouteComponent(): React.JSX.Element {
           address: null
         })
       }
+
       if (lastMessage.type === 'media') {
-        setMedia({
+        const newMedia: MediaPayload = {
           title: lastMessage.title,
           artist: lastMessage.artist,
           status: lastMessage.status,
           is_playing: lastMessage.is_playing,
           audio_amplitude: lastMessage.audio_amplitude
+        }
+
+        setMedia(newMedia)
+
+        setMediaHistory((prev) => {
+          if (newMedia.title === 'Unknown' || newMedia.title === '') return prev
+          const exists = prev.some(
+            (item) => item.title === newMedia.title && item.artist === newMedia.artist
+          )
+
+          if (exists) return prev
+
+          return [{ title: newMedia.title, artist: newMedia.artist }, ...prev].slice(0, 20)
         })
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
-    console.log(`lastMessage`, lastMessage)
   }, [lastMessage])
 
   return (
     <>
       {device && device.address && (
         <>
+          {/* CONNECTED DEVICE */}
           <Card className="p-4 mb-6">
             <CardHeader className="flex flex-row items-center justify-between">
               <h2 className="text-lg font-semibold">Connected Device</h2>
@@ -118,25 +145,43 @@ function RouteComponent(): React.JSX.Element {
               </div>
             </CardContent>
           </Card>
-          {media && (
-            <div className="mt-4 space-y-3">
-              <div>
-                <p className="text-sm font-semibold">{media.title}</p>
-                <p className="text-xs text-muted-foreground">{media.artist}</p>
-                <p className="text-xs">{media.is_playing ? '▶ Playing' : '⏸ Paused'}</p>
-              </div>
 
-              {media.audio_amplitude && (
-                <AudioVisualizer
-                  amplitude={media.audio_amplitude.amplitude}
-                  peak={media.audio_amplitude.peak}
-                  rms={media.audio_amplitude.rms}
-                />
-              )}
-            </div>
+          {/* CURRENT MEDIA */}
+          {media && media.title !== 'Unknown' && (
+            <Card className="mb-4">
+              <CardHeader className="space-y-2">
+                <Marquee pauseOnHover speed={50}>
+                  {media.title}
+                </Marquee>
+                <p className="text-center text-sm text-muted-foreground">{media.artist}</p>
+                <div className="mx-auto">{media.is_playing ? <Pause /> : <Play />}</div>
+              </CardHeader>
+            </Card>
+          )}
+
+          {/* MEDIA HISTORY (SCROLLABLE) */}
+          {mediaHistory.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Media History</CardTitle>
+              </CardHeader>
+              <CardContent className="max-h-48 overflow-y-auto space-y-2 neo-scrollbar">
+                {mediaHistory.map((item, index) => (
+                  <div
+                    key={`${item.title}-${index}`}
+                    className="border rounded-md p-2 text-sm"
+                  >
+                    <p className="font-medium truncate">{item.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           )}
         </>
       )}
+
+      {/* DISCONNECTED STATE */}
       {(!device ||
         (device && !device.connected && device.name === 'Unknown' && !device.address)) && (
         <>
@@ -146,30 +191,28 @@ function RouteComponent(): React.JSX.Element {
               className="mx-auto h-24 w-24 rounded-full text-lg"
               disabled={isScanning}
             >
-              SCAN {isScanning && <Loader className="animate-spin" />}
+              SCAN {isScanning && <Loader className="animate-spin ml-2" />}
             </Button>
           </div>
+
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Available Devices</CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-3">
-              {/* Empty State */}
               {!isScanning && devices.length === 0 && (
                 <p className="text-center text-sm text-muted-foreground">
                   Klik tombol scan untuk mencari perangkat BLE.
                 </p>
               )}
 
-              {/* Loading State */}
               {isScanning && (
                 <div className="flex justify-center py-4 text-sm text-muted-foreground">
                   <Loader className="animate-spin mr-2" /> Scanning...
                 </div>
               )}
 
-              {/* Device List */}
               {devices.map((item) => (
                 <div
                   key={item.address}
@@ -187,7 +230,6 @@ function RouteComponent(): React.JSX.Element {
                     </div>
                   </div>
 
-                  {/* Meta */}
                   {item.rssi && (
                     <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                       <Wifi size={12} /> {item.rssi} dBm

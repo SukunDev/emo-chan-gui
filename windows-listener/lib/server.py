@@ -70,9 +70,9 @@ class Server(WebSocketServer):
                     if self.audio_listener:
                         await self.audio_listener.start()
 
-                    Server.windows_listener_tasks[ws] = []
-                    window_monitor_task = asyncio.create_task(self._window_monitor_loop(ws))
-                    Server.windows_listener_tasks[ws].append(window_monitor_task)
+                Server.windows_listener_tasks[ws] = []
+                window_monitor_task = asyncio.create_task(self._window_monitor_loop(ws))
+                Server.windows_listener_tasks[ws].append(window_monitor_task)
 
                 await self.send(ws, {
                     "event": "ble-connect-result",
@@ -160,7 +160,6 @@ class Server(WebSocketServer):
         """Main monitoring loop"""
         first_run = True
         last_log_time = 0
-        print("monitor")
         
         while Server.is_running:
             try:
@@ -169,8 +168,6 @@ class Server(WebSocketServer):
                 audio_data = {"amplitude": 0.0, "peak": 0.0, "rms": 0.0}
                 if Server.audio_listener:
                     audio_data = Server.audio_listener.get_current_amplitude()
-
-                print(audio_data)
                 
                 event = MediaAudioEvent(
                     title=title,
