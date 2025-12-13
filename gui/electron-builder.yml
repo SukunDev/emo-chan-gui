@@ -14,7 +14,7 @@ files:
 extraResources:
   - resources/**
   - from: ../windows-listener/dist
-    to: windows-listener/dist
+    to: ./
 
 asarUnpack:
   - resources/**

@@ -9,13 +9,12 @@ let backendProcess: ReturnType<typeof spawn> | null = null
 
 export function startBackend():void {
   if (is.dev) return
+  if (backendProcess) return
   const exePath = path.join(
     process.resourcesPath,
-    'windows-listener',
-    'dist',
+    'ble_bridge',
     'ble_bridge.exe'
   )
-  console.log(`exePath`, exePath)
 
   backendProcess = spawn(exePath, [], {
     stdio: 'ignore',

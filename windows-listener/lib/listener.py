@@ -1,7 +1,8 @@
-
 import json
 from dataclasses import dataclass, asdict
 import logging
+import asyncio
+import time
 
 # Media Control
 from winsdk.windows.media.control import \
@@ -47,33 +48,85 @@ class MediaAudioEvent:
 # ==================== Media Listener ====================
 
 class MediaPlaybackListener:
-    """Listener untuk media playback"""
+    """Listener untuk media playback dengan intelligent caching"""
     
     def __init__(self):
         self.is_running = False
-        self.last_media_state = None
+        
+        # Cache data
+        self._cached_title = "Unknown"
+        self._cached_artist = "Unknown"
+        self._cached_status = "Unknown"
+        self._cached_is_playing = False
+        self._cache_valid = False
+        
+        # Background polling
+        self._poller_task = None
+        self._poll_interval = 0.2  # Poll setiap 200ms
+        
+        # Session tracking untuk detect changes
+        self._last_session_id = None
     
     async def start(self):
+        """Start media listener dengan background polling"""
         self.is_running = True
-        logger.info("Media listener started")
+        
+        # Start background poller
+        self._poller_task = asyncio.create_task(self._background_poller())
+        
+        logger.info("Media listener started with background polling")
     
     async def stop(self):
+        """Stop media listener"""
         self.is_running = False
+        
+        if self._poller_task:
+            self._poller_task.cancel()
+            try:
+                await self._poller_task
+            except asyncio.CancelledError:
+                pass
+        
         logger.info("Media listener stopped")
     
-    async def get_current_media(self) -> tuple:
-        """Get current media info: (title, artist, status, is_playing)"""
-        if not self.is_running:
-            return ("Unknown", "Unknown", "Unknown", False)
+    async def _background_poller(self):
+        """Background task yang polling media info"""
+        logger.info("Background media poller started")
         
+        while self.is_running:
+            try:
+                await self._fetch_and_update_cache()
+            except Exception as e:
+                logger.error(f"Poller error: {e}")
+            
+            await asyncio.sleep(self._poll_interval)
+        
+        logger.info("Background media poller stopped")
+    
+    async def _fetch_and_update_cache(self):
+        """Fetch media info dan update cache jika ada perubahan"""
         try:
             sessions = await MediaManager.request_async()
             current_session = sessions.get_current_session()
             
-            # 🔥 PERBAIKAN: Return None jika tidak ada session
+            # Tidak ada session aktif
             if not current_session:
-                return (None, None, None, None)  # Beda dengan "Unknown"
+                # Update cache ke "Unknown" jika session hilang
+                if self._cached_title != "Unknown":
+                    self._cached_title = "Unknown"
+                    self._cached_artist = "Unknown"
+                    self._cached_status = "Unknown"
+                    self._cached_is_playing = False
+                    self._cache_valid = True
+                    logger.info("No active media session")
+                return
             
+            # Check if session changed (detect app change)
+            session_id = id(current_session)
+            session_changed = (session_id != self._last_session_id)
+            self._last_session_id = session_id
+            
+            # Get media info
             info = await current_session.try_get_media_properties_async()
             playback_info = current_session.get_playback_info()
             
@@ -88,11 +141,51 @@ class MediaPlaybackListener:
             title = info.title or "Unknown"
             artist = info.artist or "Unknown"
             
-            return (title, artist, status, is_playing)
+            # Check if data berubah
+            data_changed = (
+                title != self._cached_title or
+                artist != self._cached_artist or
+                status != self._cached_status or
+                is_playing != self._cached_is_playing or
+                session_changed
+            )
+            
+            if data_changed:
+                self._cached_title = title
+                self._cached_artist = artist
+                self._cached_status = status
+                self._cached_is_playing = is_playing
+                self._cache_valid = True
+                
+                logger.debug(f"Media updated: {title} by {artist} - {status}")
             
         except Exception as e:
-            logger.error(f"Error getting media info: {e}")
+            logger.error(f"Error fetching media: {e}")
+            # Jangan ubah cache jika ada error, biar tetap konsisten
+    
+    async def get_current_media(self) -> tuple:
+        """
+        Get current media info dari cache - INSTANT!
+        Returns: (title, artist, status, is_playing)
+        """
+        if not self.is_running:
             return ("Unknown", "Unknown", "Unknown", False)
+        
+        # Tunggu sebentar jika cache belum valid (first run)
+        if not self._cache_valid:
+            # Tunggu max 500ms untuk initial fetch
+            for _ in range(5):
+                if self._cache_valid:
+                    break
+                await asyncio.sleep(0.1)
+        
+        # Return cached data - NO BLOCKING!
+        return (
+            self._cached_title,
+            self._cached_artist,
+            self._cached_status,
+            self._cached_is_playing
+        )
 
 
 # ==================== Audio Amplitude Listener ====================

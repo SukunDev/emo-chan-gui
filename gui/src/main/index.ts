@@ -1,14 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  app,
-  shell,
-  BrowserWindow,
-  ipcMain,
-  nativeTheme,
-  Tray,
-  Menu,
-  Notification
-} from 'electron'
+import { app, shell, BrowserWindow, ipcMain, nativeTheme, Tray, Menu, Notification } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -35,6 +26,9 @@ function createWindow(): void {
     show: false,
     frame: false,
     autoHideMenuBar: true,
+    resizable: false,
+    maximizable: false,
+    minimizable: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -48,7 +42,6 @@ function createWindow(): void {
     mainWindow?.show()
   })
 
-  // ❌ Close → hide to tray
   mainWindow.on('close', (e) => {
     if (!isQuitting) {
       e.preventDefault()
@@ -79,9 +72,7 @@ function createWindow(): void {
 function createTray(): void {
   if (tray) return
 
-  tray = new Tray(
-    join(process.resourcesPath, 'resources', 'icon.ico')
-  )
+  tray = new Tray(join(process.resourcesPath, 'resources', 'icon.ico'))
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -105,7 +96,6 @@ function createTray(): void {
   tray.setToolTip('ESP32-PET')
   tray.setContextMenu(contextMenu)
 
-  // 🖱️ DOUBLE CLICK → show app
   tray.on('double-click', () => {
     if (!mainWindow) createWindow()
     mainWindow?.show()

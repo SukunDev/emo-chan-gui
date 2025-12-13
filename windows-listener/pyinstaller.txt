@@ -1,0 +1,1 @@
+pyinstaller --clean --onedir --noconsole --name ble_bridge main.py

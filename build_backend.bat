@@ -88,8 +88,8 @@ echo   Building executable with PyInstaller
 echo ========================================%RESET%
 echo.
 
-:: Prepare PyInstaller command
-set "PY_CMD=pyinstaller --clean --onefile --noconsole --name ble_bridge"
+:: Prepare PyInstaller command (--onedir instead of --onefile)
+set "PY_CMD=pyinstaller --clean --onedir --noconsole --name ble_bridge"
 
 :: Add icon if exists
 if exist "icon.ico" (
@@ -103,12 +103,25 @@ if exist "config" (
     set "PY_CMD=!PY_CMD! --add-data config;config"
 )
 
-:: Add hidden imports
-set "PY_CMD=!PY_CMD! --hidden-import=asyncio --hidden-import=bleak"
+:: Add hidden imports for better compatibility
+set "PY_CMD=!PY_CMD! --hidden-import=asyncio"
+set "PY_CMD=!PY_CMD! --hidden-import=bleak"
+set "PY_CMD=!PY_CMD! --hidden-import=websockets"
+set "PY_CMD=!PY_CMD! --hidden-import=winsdk"
+set "PY_CMD=!PY_CMD! --hidden-import=pyaudio"
+set "PY_CMD=!PY_CMD! --hidden-import=numpy"
+
+:: Collect all bleak dependencies
+set "PY_CMD=!PY_CMD! --collect-all bleak"
 
 :: Add main.py
 set "PY_CMD=!PY_CMD! main.py"
 
+echo %YELLOW%[INFO]%RESET% Build configuration:
+echo   - Mode: One directory (faster loading)
+echo   - Console: Hidden
+echo   - Name: ble_bridge
+echo.
 echo %YELLOW%[INFO]%RESET% Running PyInstaller...
 echo.
 %PY_CMD%
@@ -120,18 +133,34 @@ if !errorlevel! neq 0 (
     exit /b 1
 )
 
-:: Verify build output
+:: Verify build output (onedir creates a folder, not a single exe)
 echo.
 echo %YELLOW%[INFO]%RESET% Verifying build output...
-if not exist "dist\ble_bridge.exe" (
-    echo %RED%[ERROR]%RESET% Build output not found: dist\ble_bridge.exe
+if not exist "dist\ble_bridge" (
+    echo %RED%[ERROR]%RESET% Build output folder not found: dist\ble_bridge
     exit /b 1
 )
 
-:: Get file size
-for %%A in ("dist\ble_bridge.exe") do set size=%%~zA
-set /a size_mb=!size! / 1048576
-echo %GREEN%[OK]%RESET% Executable created: dist\ble_bridge.exe (!size_mb! MB)
+if not exist "dist\ble_bridge\ble_bridge.exe" (
+    echo %RED%[ERROR]%RESET% Executable not found: dist\ble_bridge\ble_bridge.exe
+    exit /b 1
+)
+
+:: Get folder size
+set "total_size=0"
+for /r "dist\ble_bridge" %%F in (*) do (
+    set /a "total_size+=%%~zF"
+)
+set /a size_mb=!total_size! / 1048576
+
+:: Get exe size
+for %%A in ("dist\ble_bridge\ble_bridge.exe") do set exe_size=%%~zA
+set /a exe_size_mb=!exe_size! / 1048576
+
+echo %GREEN%[OK]%RESET% Build completed successfully
+echo   - Folder: dist\ble_bridge
+echo   - Executable: ble_bridge.exe (!exe_size_mb! MB)
+echo   - Total size: !size_mb! MB
 
 :: Build summary
 echo.
@@ -139,9 +168,13 @@ echo %GREEN%========================================
 echo   Backend Build Completed Successfully
 echo ========================================%RESET%
 echo.
-echo %GREEN%[SUCCESS]%RESET% Output: windows-listener\dist\ble_bridge.exe
-echo %GREEN%[SUCCESS]%RESET% Size: !size_mb! MB
-echo %GREEN%[SUCCESS]%RESET% Type: Standalone executable
+echo %GREEN%[SUCCESS]%RESET% Output folder: windows-listener\dist\ble_bridge\
+echo %GREEN%[SUCCESS]%RESET% Executable: ble_bridge.exe
+echo %GREEN%[SUCCESS]%RESET% Folder size: !size_mb! MB
+echo %GREEN%[SUCCESS]%RESET% Type: Portable folder (faster startup)
+echo.
+echo %CYAN%[TIP]%RESET% To run: dist\ble_bridge\ble_bridge.exe
+echo %CYAN%[TIP]%RESET% The entire 'ble_bridge' folder is needed to run
 echo.
 
 exit /b 0

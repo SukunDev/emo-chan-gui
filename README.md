@@ -1,5 +1,9 @@
 # ESP32 Robot Pet
 
+<p align="center">
+  <img src="asset/preview.png" />
+</p>
+
 Aplikasi desktop berbasis Electron untuk mengontrol robot pet ESP32 melalui koneksi Bluetooth Low Energy (BLE). Aplikasi memantau media playback di Windows dan mengirimkan informasi tersebut ke perangkat ESP32 secara real-time.
 
 Aplikasi terdiri dari dua komponen utama: frontend Electron yang menangani antarmuka pengguna dan komunikasi WebSocket, serta backend Python yang mengelola koneksi BLE dan monitoring media Windows.
