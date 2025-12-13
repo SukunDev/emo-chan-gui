@@ -1,23 +1,32 @@
 appId: com.electron.app
-productName: frontend
+productName: ESP32-PET
 directories:
   buildResources: build
 files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - out/**/*
+  - package.json
+  - '!**/src/**'
+  - '!**/*.ts'
+  - '!**/*.tsx'
+  - '!**/.git/**'
+  - '!**/tests/**'
+  - '!**/test/**'
+extraResources:
+  - resources/**
+  - from: ../windows-listener/dist
+    to: windows-listener/dist
+
 asarUnpack:
   - resources/**
 win:
-  executableName: frontend
+  executableName: esp32-pet
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  oneClick: false
+  license: 'LICENSE.txt'
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:

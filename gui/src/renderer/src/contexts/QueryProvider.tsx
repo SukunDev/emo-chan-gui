@@ -13,18 +13,20 @@ export function QueryProvider({ children }: QueryProviderProps): React.JSX.Eleme
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      <TanStackDevtools
-        config={{
-          position: 'bottom-right'
-        }}
-        plugins={[
-          {
-            name: 'Tanstack Router',
-            render: <TanStackRouterDevtoolsPanel />
-          },
-          TanStackQueryDevtools
-        ]}
-      />
+      {import.meta.env.MODE === 'development' && (
+        <TanStackDevtools
+          config={{
+            position: 'bottom-right'
+          }}
+          plugins={[
+            {
+              name: 'Tanstack Router',
+              render: <TanStackRouterDevtoolsPanel />
+            },
+            TanStackQueryDevtools
+          ]}
+        />
+      )}
     </QueryClientProvider>
   )
 }

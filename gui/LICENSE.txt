@@ -1,0 +1,106 @@
+SOFTWARE END-USER LICENSE AGREEMENT (EULA)
+------------------------------------------
+
+IMPORTANT — PLEASE READ THIS CAREFULLY BEFORE INSTALLING OR USING THE SOFTWARE.
+
+This End-User License Agreement ("Agreement") is a legal agreement between you 
+(the "User") and {Your Company Name} ("Provider") regarding the installation 
+and use of the application "{Your App Name}" ("Software").
+
+By installing, copying, or using the Software, you agree to be bound by the 
+terms of this Agreement. If you do not agree to the terms, do not install or use 
+the Software.
+
+
+1. GRANT OF LICENSE
+--------------------
+Provider grants the User a limited, non-exclusive, non-transferable license to 
+install and use the Software on one device for personal or internal business 
+purposes, subject to this Agreement.
+
+
+2. INTELLECTUAL PROPERTY
+-------------------------
+The Software and all associated assets, including but not limited to code, 
+designs, graphics, and documentation, are owned by the Provider and are 
+protected by copyright, trademark, and other intellectual property laws.
+
+The User is not granted any ownership rights to the Software.
+
+
+3. RESTRICTIONS
+----------------
+The User may NOT:
+
+- Reverse engineer, decompile, or disassemble the Software.
+- Modify, alter, or create derivative works of the Software.
+- Rent, lease, distribute, sell, or sublicense the Software to any third party.
+- Remove or alter any copyright notices, trademarks, or branding contained 
+  within the Software.
+
+
+4. DATA COLLECTION & PRIVACY
+-----------------------------
+The Software may collect certain technical or usage data in accordance with 
+Provider’s Privacy Policy. Such data is used solely for improving the Software 
+and ensuring proper functionality.
+
+The Software does NOT collect sensitive personal information unless explicitly 
+provided by the User.
+
+
+5. UPDATES AND CHANGES
+-----------------------
+The Provider may deliver updates, patches, or new versions of the Software. 
+Such updates may modify or remove existing features. Continued use of the 
+Software after updates constitutes acceptance of these changes.
+
+
+6. NO WARRANTY / AS-IS
+-----------------------
+The Software is provided "AS IS" without warranties of any kind, either express 
+or implied. The Provider does not guarantee:
+
+- Error-free performance
+- Uninterrupted availability
+- Compatibility with all hardware or systems
+
+
+7. LIMITATION OF LIABILITY
+---------------------------
+To the maximum extent permitted by law, the Provider shall not be liable for 
+any damages, including but not limited to:
+
+- Loss of data  
+- Loss of profits  
+- Business interruption  
+- Technical malfunction  
+- Any other indirect or consequential damages  
+
+
+8. TERMINATION
+---------------
+This Agreement is effective until terminated. The User may terminate it by 
+uninstalling and deleting all copies of the Software.
+
+The Provider may terminate this Agreement if the User fails to comply with its 
+terms. Upon termination, the User must remove all copies of the Software.
+
+
+9. GOVERNING LAW
+-----------------
+This Agreement is governed by and construed in accordance with the laws of 
+{Your Country / Jurisdiction}. Any disputes shall be resolved in the courts of 
+{Your City / Region}.
+
+
+10. ACCEPTANCE
+---------------
+By selecting "I Agree" during installation and/or by using the Software, the 
+User acknowledges that they have read, understood, and agree to be bound by 
+this Agreement.
+
+
+-----------------------------------------
+{Your Company Name}
+{Website or Contact Email}
