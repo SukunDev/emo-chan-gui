@@ -49,7 +49,7 @@ function createWindow(): void {
 
       if (firstMinimize) {
         new Notification({
-          title: 'ESP32-PET',
+          title: 'ESP32 Emo Chan',
           body: 'Aplikasi tetap berjalan di system tray'
         }).show()
         firstMinimize = false
@@ -93,7 +93,7 @@ function createTray(): void {
     }
   ])
 
-  tray.setToolTip('ESP32-PET')
+  tray.setToolTip('ESP32 Emo Chan')
   tray.setContextMenu(contextMenu)
 
   tray.on('double-click', () => {

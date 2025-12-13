@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: ESP32-PET
+productName: esp32-emo-chan
 directories:
   buildResources: build
 files:
@@ -19,7 +19,7 @@ extraResources:
 asarUnpack:
   - resources/**
 win:
-  executableName: esp32-pet
+  executableName: esp32-emo-chan
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

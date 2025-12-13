@@ -1,4 +1,4 @@
-# ESP32 Robot Pet
+# ESP32 Emo Chan
 
 <p align="center">
   <img src="asset/preview.png" />

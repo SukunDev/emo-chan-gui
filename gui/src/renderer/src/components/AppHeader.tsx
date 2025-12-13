@@ -8,7 +8,7 @@ export function AppHeader(): React.JSX.Element {
       className="flex h-16 shrink-0 items-center gap-2 bg-main border-b-3 px-4 py-4"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
-        <h1>ESP Robot Pet</h1>
+        <h1>ESP32 Emo Chan</h1>
       <div className="flex flex-1 items-center justify-end space-x-4">
         <Separator orientation="vertical" className="h-4 bg-neutral-700" />
         <div className="flex space-x-2">
