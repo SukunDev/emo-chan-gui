@@ -102,62 +102,69 @@ function createTray(): void {
   })
 }
 
-app.whenReady().then(() => {
-  electronApp.setAppUserModelId('com.electron')
 
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.whenReady().then(() => {
+    electronApp.setAppUserModelId('com.electron')
+
+    app.on('browser-window-created', (_, window) => {
+      optimizer.watchWindowShortcuts(window)
+    })
+
+    const store = new Store()
+
+    ipcMain.on('ping', () => console.log('pong'))
+
+    ipcMain.on('window:minimize', (e) => {
+      BrowserWindow.fromWebContents(e.sender)?.minimize()
+    })
+
+    ipcMain.on('window:maximize', (e) => {
+      const win = BrowserWindow.fromWebContents(e.sender)
+      if (win?.isMaximized()) win.unmaximize()
+      else win?.maximize()
+    })
+
+    ipcMain.on('window:close', (e) => {
+      BrowserWindow.fromWebContents(e.sender)?.close()
+    })
+
+    ipcMain.handle('todos:fetch', async () => {
+      const response = await axios.get('https://jsonplaceholder.typicode.com/todos')
+      return response.data
+    })
+
+    ipcMain.handle('auth:login', async (_event, username: string, password: string) => {
+      try {
+        const payload = { username, password }
+        return await api.post(apiEndpoints.login, { data: payload }, getRestApiUrl)
+      } catch (error: any) {
+        throw new Error(error.message || 'Login failed')
+      }
+    })
+
+    ipcMain.handle('store:set', (_event, name: string, value: any) => {
+      store.set(name, value)
+    })
+
+    ipcMain.handle('store:get', (_event, name: string) => {
+      return store.get(name)
+    })
+
+    ipcMain.handle('store:clear', () => {
+      store.clear()
+      return true
+    })
+
+    createWindow()
+    createTray()
+
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    })
   })
-
-  const store = new Store()
-
-  ipcMain.on('ping', () => console.log('pong'))
-
-  ipcMain.on('window:minimize', (e) => {
-    BrowserWindow.fromWebContents(e.sender)?.minimize()
-  })
-
-  ipcMain.on('window:maximize', (e) => {
-    const win = BrowserWindow.fromWebContents(e.sender)
-    if (win?.isMaximized()) win.unmaximize()
-    else win?.maximize()
-  })
-
-  ipcMain.on('window:close', (e) => {
-    BrowserWindow.fromWebContents(e.sender)?.close()
-  })
-
-  ipcMain.handle('todos:fetch', async () => {
-    const response = await axios.get('https://jsonplaceholder.typicode.com/todos')
-    return response.data
-  })
-
-  ipcMain.handle('auth:login', async (_event, username: string, password: string) => {
-    try {
-      const payload = { username, password }
-      return await api.post(apiEndpoints.login, { data: payload }, getRestApiUrl)
-    } catch (error: any) {
-      throw new Error(error.message || 'Login failed')
-    }
-  })
-
-  ipcMain.handle('store:set', (_event, name: string, value: any) => {
-    store.set(name, value)
-  })
-
-  ipcMain.handle('store:get', (_event, name: string) => {
-    return store.get(name)
-  })
-
-  ipcMain.handle('store:clear', () => {
-    store.clear()
-    return true
-  })
-
-  createWindow()
-  createTray()
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-})
+}
