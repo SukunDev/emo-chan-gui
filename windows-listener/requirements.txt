@@ -1,6 +1,7 @@
 altgraph==0.17.5
 async-timeout==5.0.1
 bleak==2.0.0
+cffi==2.0.0
 comtypes==1.4.13
 contourpy==1.3.2
 cycler==0.12.1
@@ -14,6 +15,7 @@ pillow==12.0.0
 psutil==7.1.3
 PyAudio==0.2.14
 pycaw==20251023
+pycparser==2.23
 pyinstaller==6.17.0
 pyinstaller-hooks-contrib==2025.10
 pyparsing==3.2.5
@@ -21,6 +23,7 @@ python-dateutil==2.9.0.post0
 pywin32==311
 pywin32-ctypes==0.2.3
 six==1.17.0
+sounddevice==0.5.3
 typing_extensions==4.15.0
 websockets==15.0.1
 winrt-runtime==3.2.1
