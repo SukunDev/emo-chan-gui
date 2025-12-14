@@ -191,7 +191,7 @@ function RouteComponent(): React.JSX.Element {
               className="mx-auto h-24 w-24 rounded-full text-lg"
               disabled={isScanning}
             >
-              SCAN {isScanning && <Loader className="animate-spin ml-2" />}
+              SCAN
             </Button>
           </div>
 
