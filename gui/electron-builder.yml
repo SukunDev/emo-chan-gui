@@ -20,6 +20,7 @@ asarUnpack:
   - resources/**
 win:
   executableName: esp32-emo-chan
+  icon: resources/icon_electron.ico
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
