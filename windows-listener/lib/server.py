@@ -87,6 +87,11 @@ class Server(WebSocketServer):
         except Exception as e:
             Server.logger.error(e)
 
+    async def disconnect_ble(self):
+        if Server.ble:
+            await Server.ble.disconnect(clean=True)
+            Server.ble = None
+
     async def _ble_status_heartbeat(self, ws):
         try:
             while True:
